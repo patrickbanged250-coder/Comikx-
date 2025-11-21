@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Comikx 🤬 shop</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+  /* ===== Theme colors: black, blue, lighted blue ===== */
+  :root{
+    --black:#001020;
+    --blue:#007bff;
+    --lightblue:#bfe5ff;
+    --panel:#001827;
+    --muted:#66b3ff;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;
+    background:linear-gradient(180deg,#e6f3ff,#cce8ff 40%, #b3ddff 100%);
+    color:#111;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+  }
+
+  /* Header */
+  header{
+    background:linear-gradient(90deg,var(--black),#003c80);
+    color:white;
+    padding:12px 16px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    box-shadow:0 3px 10px rgba(0,0,0,0.15);
+  }
+  header h1{margin:0;font-size:20px;letter-spacing:0.4px;}
+
+  /* Top small tagline area */
+  .topbar{
+    display:flex;
+    gap:8px;
+    align-items:center;
+    margin-left:auto;
+    font-size:14px;
+    color:#dbefff;
+  }
+
+  main{flex:1;padding:18px;max-width:1200px;margin:0 auto;width:100%;}
+
+  /* Sections */
+  section{
+    display:none;
+    background:white;
+    padding:18px;
+    border-radius:10px;
+    box-shadow:0 6px 18px rgba(0,0,0,0.08);
+    margin-bottom:18px;
+  }
+  section.active{display:block;}
+
+  h2{color:#003c80;margin-top:0}
+
+  /* Grid for products */
+  .product-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:14px;
+    margin-top:12px;
+  }
+
+  .card{
+    border-radius:14px;
+    overflow:hidden;
+    background:white;
+    box-shadow:0 6px 18px rgba(0,0,0,0.08);
+    text-align:center;
+    transition:transform .18s ease, box-shadow .18s ease;
+  }
+  .card:hover{transform:translateY(-6px);box-shadow:0 14px 30px rgba(0,0,0,0.14);}
+  .card img{
+    width:100%;
+    height:150px;
+    object-fit:cover;
+    display:block;
+    border-bottom:5px solid var(--blue);
+    border-radius:12px 12px 0 0;
+  }
+  .card .meta{padding:10px 12px}
+  .card h4{margin:6px 0;color:var(--black)}
+  .card p.desc{margin:4px 0;color:var(--muted);font-size:13px}
+  .card p.price{margin:8px 0;color:var(--blue);font-weight:700}
+
+  /* Admin dashboard layout */
+  .dashboard{background:linear-gradient(180deg,var(--panel),#002a44);color:white;padding:16px;border-radius:10px}
+  .dashboard h3{margin-top:0;color:gold}
+  .upload-form input[type="text"],
+  .upload-form input[type="number"],
+  .upload-form textarea{
+    width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.12);margin-top:8px;background:rgba(255,255,255,0.02);color:white;
+  }
+  .upload-actions{display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap}
+  .upload-btn{background:var(--blue);color:white;border:none;padding:10px 14px;border-radius:10px;cursor:pointer;font-weight:700}
+  .upload-btn:hover{background:#0056b3}
+  input[type=file]::file-selector-button{
+    background:linear-gradient(180deg,#99d0ff,#bfeaff);border:none;padding:8px 12px;border-radius:8px;cursor:pointer;font-weight:700;margin-right:8px;
+  }
+
+  .admin-products{margin-top:12px;}
+  .admin-products .card{display:flex;flex-direction:column;align-items:center;padding-bottom:8px}
+  .delete-btn{background:#d9534f;color:white;border:none;padding:8px 10px;border-radius:8px;cursor:pointer}
+  .delete-btn:hover{background:#c9302c}
+
+  /* Messages */
+  .msg-card{
+    background:white;color:#111;border-left:4px solid var(--blue);padding:12px;margin:8px 0;border-radius:8px;
+  }
+  .msg-card b{color:var(--black)}
+  .msg-meta{font-size:12px;color:#666;margin-top:6px}
+  .msg-reply{margin-top:8px;display:flex;gap:8px;align-items:center}
+  .msg-reply input{flex:1;padding:8px;border-radius:8px;border:1px solid #ccc}
+  .msg-reply button{background:var(--blue);color:white;border:none;padding:8px 10px;border-radius:8px;cursor:pointer}
+  .msg-reply button:hover{background:#0056b3}
+
+  /* Client panel */
+  .client-panel{background:linear-gradient(180deg,#001827,#002f45);color:#fff;padding:16px;border-radius:10px}
+  .client-panel textarea{width:100%;height:90px;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.08);resize:vertical;background:rgba(255,255,255,0.02);color:white}
+  .client-panel input[type=number]{width:100%;padding:8px;border-radius:8px;margin-top:8px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.02);color:white}
+
+  /* About + Settings */
+  .social-links{display:flex;gap:12px;align-items:center;justify-content:center;margin-top:10px}
+  .social-links a{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%;background:var(--blue);color:white;text-decoration:none}
+  .settings-list{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+  .settings-list button{display:flex;gap:8px;align-items:center;padding:8px;border-radius:8px;border:none;background:#0a2436;color:white;cursor:pointer}
+  .settings-list button.logout{background:#cc3b3b}
+
+  /* Floating single icon (expands) bottom-right */
+  .fab{
+    position:fixed;right:18px;bottom:18px;width:56px;height:56px;border-radius:50%;
+    background:var(--blue);color:white;display:flex;align-items:center;justify-content:center;
+    box-shadow:0 10px 24px rgba(0,0,0,0.22);cursor:pointer;z-index:1200;
+  }
+  .fab-menu{
+    position:fixed;right:18px;bottom:86px;display:flex;flex-direction:column;gap:8px;z-index:1200;align-items:flex-end;
+  }
+  .fab-item{
+    width:44px;height:44px;border-radius:8px;background:var(--black);display:flex;align-items:center;justify-content:center;color:white;cursor:pointer;
+    box-shadow:0 6px 14px rgba(0,0,0,0.18);
+  }
+  .fab-label{
+    margin-right:8px;padding:6px 10px;background:rgba(0,0,0,0.75);color:white;border-radius:8px;font-size:13px;margin-bottom:4px;
+  }
+
+  /* Loader (dots) */
+  #loader{
+    position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.5);z-index:2000;
+  }
+  .dots{display:flex;gap:8px}
+  .dots .dot{width:12px;height:12px;border-radius:50%;background:white;animation:bounce 1.1s infinite ease-in-out}
+  .dots .dot:nth-child(2){animation-delay:0.12s}
+  .dots .dot:nth-child(3){animation-delay:0.24s}
+  @keyframes bounce{0%,80%,100%{transform:scale(0);}40%{transform:scale(1);}}
+
+  /* Auth modal (Sign in/up) and admin pass modal */
+  .modal{
+    position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.5);z-index:2100;
+  }
+  .modal .box{background:white;padding:18px;border-radius:10px;max-width:360px;width:100%}
+  .modal input{width:100%;padding:10px;border-radius:8px;border:1px solid #ddd;margin-top:8px}
+  .modal button{margin-top:10px;padding:10px 12px;border-radius:8px;border:none;background:var(--blue);color:white;cursor:pointer}
+
+  /* small responsive */
+  @media(max-width:700px){
+    header h1{font-size:18px}
+    .fab-label{display:none}
+    .fab-item{width:40px;height:40px}
+  }
+</style>
+</head>
+<body>
+  <header>
+    <h1>Comikx 🤬 shop</h1>
+    <div class="topbar">
+      <span><i class="fas fa-shopping-bag"></i></span>
+      <span style="opacity:.9">Buy. Message. Reply.</span>
+    </div>
+  </header>
+
+  <!-- Loader (1.30 seconds when navigating) -->
+  <div id="loader">
+    <div class="dots" aria-hidden>
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+    </div>
+  </div>
+
+  <main>
+    <!-- HOME -->
+    <section id="home" class="active">
+      <h2>Home 🏠</h2>
+
+      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+        <input id="searchInput" placeholder="🔍 Search products..." style="flex:1;padding:10px;border-radius:10px;border:1px solid rgba(0,0,0,0.08)" />
+        <button id="searchBtn" style="background:var(--blue);color:white;border:none;padding:10px 12px;border-radius:10px;cursor:pointer">Search</button>
+      </div>
+
+      <div id="productGrid" class="product-grid"></div>
+    </section>
+
+    <!-- ADMIN (protected by passcode 'banged') -->
+    <section id="admin">
+      <div class="dashboard">
+        <h3>Admin Dashboard</h3>
+
+        <div style="display:flex;gap:14px;flex-wrap:wrap">
+          <form id="uploadForm" class="upload-form" style="flex:1;min-width:260px">
+            <input id="pTitle" type="text" placeholder="Product title" required />
+            <textarea id="pDesc" placeholder="Short description"></textarea>
+            <input id="pPrice" type="number" placeholder="Price (e.g. 29.99)" step="0.01" required />
+            <input id="pImage" type="file" accept="image/*" />
+            <div class="upload-actions">
+              <button class="upload-btn" type="submit">Upload</button>
+              <small style="color:#ddd">Image recommended: 800x600</small>
+            </div>
+          </form>
+
+          <div style="flex:1;min-width:300px">
+            <h4 style="color:#fff;margin:0 0 8px 0">Client messages</h4>
+            <div id="messageTable" style="max-height:420px;overflow:auto;padding-right:8px"></div>
+          </div>
+        </div>
+
+        <h4 style="color:#fff;margin-top:12px">Uploaded Products</h4>
+        <div id="adminProducts" class="admin-products product-grid"></div>
+      </div>
+    </section>
+
+    <!-- CLIENT -->
+    <section id="client">
+      <div class="client-panel">
+        <h3>Client Panel</h3>
+        <p id="welcomeUser" style="margin:0 0 6px 0;color:#cde8ff"></p>
+
+        <form id="notifyForm">
+          <textarea id="messageBox" placeholder="Type your message to Admin (questions, order details...)"></textarea>
+          <input id="productPrice" type="number" placeholder="Optional: product price / offer" step="0.01" />
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button type="submit" style="background:yellow;color:black;border:none;padding:10px;border-radius:8px;cursor:pointer;font-weight:700">Send Message</button>
+            <button type="button" id="viewRepliesBtn" style="background:transparent;color:#bfe8ff;border:1px solid rgba(255,255,255,0.08);padding:10px;border-radius:8px;cursor:pointer">View My Replies</button>
+          </div>
+        </form>
+
+        <div id="clientRepliesContainer" style="margin-top:12px"></div>
+      </div>
+    </section>
+
+    <!-- ABOUT -->
+    <section id="about">
+      <h2>About Us</h2>
+      <p>Follow & contact Comikx for updates and support.</p>
+      <div class="social-links">
+        <a href="https://www.instagram.com" target="_blank" title="Instagram"><i class="fab fa-instagram"></i></a>
+        <a href="https://wa.me/" target="_blank" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+        <a href="https://x.com" target="_blank" title="X"><i class="fab fa-x-twitter"></i></a>
+        <a href="mailto:info@comikx.example" title="Email"><i class="fas fa-envelope"></i></a>
+      </div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section id="settings">
+      <h2>Settings</h2>
+      <div class="settings-list">
+        <button id="btnLogout" class="logout"><i class="fas fa-sign-out-alt"></i> Log out</button>
+        <div style="color:#bfe8ff;padding:8px 6px;border-radius:8px;background:linear-gradient(90deg,#002838,#002b3d)">
+          <small>Made by <b>Banged Patrick</b></small>  <h3></h3>
+  <p>you can visit as on our social media </p>
+  <div class="social-links">
+    <a href="#"><i class="fab fa-instagram"></i></a>
+    <a href="#"><i class="fab fa-whatsapp"></i></a>
+    <a href="#"><i class="fab fa-facebook"></i></a>
+    <a href="#"><i class="fab fa-x-twitter"></i></a>
+  </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- single floating icon & menu -->
+  <div class="fab" id="fab" title="Menu">
+    <i class="fas fa-bars"></i>
+  </div>
+  <div class="fab-menu" id="fabMenu" aria-hidden="true" style="display:none">
+    <div style="display:flex;align-items:center;gap:8px">
+      <div class="fab-label">Home</div>
+      <div class="fab-item" id="gotoHome" title="Home"><i class="fas fa-home"></i></div>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:8px">
+      <div class="fab-label">Admin</div>
+      <div class="fab-item" id="gotoAdmin" title="Admin"><i class="fas fa-user-shield"></i></div>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:8px">
+      <div class="fab-label">Sign in</div>
+      <div class="fab-item" id="openSignIn" title="Sign in"><i class="fas fa-sign-in-alt"></i></div>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:8px">
+      <div class="fab-label">Sign up</div>
+      <div class="fab-item" id="openSignUp" title="Sign up"><i class="fas fa-user-plus"></i></div>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:8px">
+      <div class="fab-label">Settings</div>
+      <div class="fab-item" id="gotoSettings" title="Settings"><i class="fas fa-cog"></i></div>
+    </div>
+  </div>
+
+  <!-- Admin passcode modal -->
+  <div class="modal" id="passModal">
+    <div class="box">
+      <h3>Admin passcode required</h3>
+      <input type="password" id="adminPassInput" placeholder="Enter admin passcode" />
+      <button id="adminPassSubmit">Enter</button>
+      <p id="passHint" style="color:#c33;margin:8px 0 0 0"></p>
+    </div>
+  </div>
+
+  <!-- Sign in / Sign up modal (reused) -->
+  <div class="modal" id="authModal">
+    <div class="box">
+      <h3 id="authTitle">Sign In</h3>
+      <input id="authUsername" placeholder="Username" />
+      <input id="authPassword" type="password" placeholder="Password" />
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button id="authSubmit" style="flex:1">Submit</button>
+        <button id="authToggle" style="flex:1;background:#222;color:white">Switch</button>
+      </div>
+      <p id="authMsg" style="color:#c33;margin:8px 0 0 0"></p>
+    </div>
+  </div>
+
+
+<script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-database.js"></script>
+<script>
+/* =========================
+   FULL APP JAVASCRIPT
+   All databases are in localStorage:
+    - users  (array of {username,password,role})
+    - products (array of {title,desc,price,image})
+    - msgs (array of {user,message,price,time,reply,replyTime})
+   ========================= */
+
+const NAV_LOAD_MS = 1300; // 1.30 seconds loader
+
+/* ---------- utility DOM helpers ---------- */
+const $ = id => document.getElementById(id);
+const showSection = id => {
+  document.querySelectorAll('main section').forEach(s=>s.classList.remove('active'));
+  const el = $(id);
+  if(el) el.classList.add('active');
+};
+
+/* ---------- loader + navigation ---------- */
+const loader = $('loader');
+function navigateWithLoader(sectionId){
+  loader.style.display = 'flex';
+  setTimeout(()=>{
+    loader.style.display = 'none';
+    showSection(sectionId);
+    // refresh client replies on open
+    if(sectionId==='client') renderClientReplies();
+    if(sectionId==='admin') renderMessages();
+  }, NAV_LOAD_MS);
+}
+
+/* hook floating menu */
+const fab = $('fab'), fabMenu = $('fabMenu');
+fab.addEventListener('click',()=> fabMenu.style.display = (fabMenu.style.display === 'flex' ? 'none' : 'flex') );
+
+/* menu buttons */
+$('gotoHome').addEventListener('click',()=>{ fabMenu.style.display='none'; navigateWithLoader('home'); });
+$('gotoAdmin').addEventListener('click',()=>{ fabMenu.style.display='none'; openAdminPassModal(); });
+$('openSignIn').addEventListener('click',()=>{ fabMenu.style.display='none'; openAuth('signin'); });
+$('openSignUp').addEventListener('click',()=>{ fabMenu.style.display='none'; openAuth('signup'); });
+$('gotoSettings').addEventListener('click',()=>{ fabMenu.style.display='none'; navigateWithLoader('settings'); });
+
+/* ---------- storage helpers ---------- */
+function getUsers(){ return JSON.parse(localStorage.getItem('users')||'[]'); }
+function saveUsers(arr){ localStorage.setItem('users', JSON.stringify(arr)); }
+function getProducts(){ return JSON.parse(localStorage.getItem('products')||'[]'); }
+function saveProducts(arr){ localStorage.setItem('products', JSON.stringify(arr)); }
+function getMessages(){ return JSON.parse(localStorage.getItem('msgs')||'[]'); }
+function saveMessages(arr){ localStorage.setItem('msgs', JSON.stringify(arr)); }
+
+/* bootstrap default admin user if none */
+if(!getUsers().some(u=>u.username==='admin')){
+  const arr = getUsers();
+  arr.push({username:'admin', password:'123', role:'admin'});
+  saveUsers(arr);
+}
+
+/* ---------- auth (sign up / sign in / sign out) ---------- */
+const authModal = $('authModal');
+const authTitle = $('authTitle');
+const authUsername = $('authUsername');
+const authPassword = $('authPassword');
+const authSubmit = $('authSubmit');
+const authToggle = $('authToggle');
+const authMsg = $('authMsg');
+let authMode = 'signin'; // or 'signup'
+
+function openAuth(mode='signin'){
+  authMode = mode;
+  authTitle.textContent = mode === 'signin' ? 'Sign In' : 'Sign Up';
+  authMsg.textContent = '';
+  authUsername.value = '';
+  authPassword.value = '';
+  authModal.style.display = 'flex';
+}
+authToggle.addEventListener('click', ()=> openAuth(authMode==='signin'?'signup':'signin') );
+
+authSubmit.addEventListener('click', ()=>{
+  const u = authUsername.value.trim();
+  const p = authPassword.value;
+  if(!u || !p){ authMsg.textContent = 'Enter username and password'; return; }
+  const users = getUsers();
+  if(authMode === 'signup'){
+    if(users.find(x=>x.username===u)){ authMsg.textContent = 'User exists'; return; }
+    users.push({username:u,password:p,role:'client'});
+    saveUsers(users);
+    authMsg.style.color = 'green';
+    authMsg.textContent = 'Account created — sign in now';
+  }else{
+    const found = users.find(x=>x.username===u && x.password===p);
+    if(!found){ authMsg.textContent = 'Invalid credentials'; return; }
+    // success
+    localStorage.setItem('loggedUser', u);
+    authModal.style.display = 'none';
+    alert('Signed in — Welcome ' + u + '!');
+    $('welcomeUser').textContent = 'Signed in as: ' + u;
+    // go to client view
+    navigateWithLoader(found.role === 'admin' ? 'admin' : 'client');
+  }
+});
+
+/* sign out */
+$('btnLogout').addEventListener('click', ()=>{
+  localStorage.removeItem('loggedUser');
+  alert('Logged out');
+  $('welcomeUser').textContent = '';
+  navigateWithLoader('home');
+});
+
+/* dismiss auth modal click outside */
+window.addEventListener('click', (e)=>{
+  if(e.target === authModal) authModal.style.display = 'none';
+});
+
+/* ---------- admin passcode modal ---------- */
+const passModal = $('passModal');
+const adminPassInput = $('adminPassInput');
+const adminPassSubmit = $('adminPassSubmit');
+const passHint = $('passHint');
+const ADMIN_PASSCODE = 'banged'; // user requested passcode name "banged"
+
+function openAdminPassModal(){
+  passHint.textContent = '';
+  adminPassInput.value = '';
+  passModal.style.display = 'flex';
+}
+adminPassSubmit.addEventListener('click', ()=>{
+  const entered = adminPassInput.value.trim();
+  if(entered === ADMIN_PASSCODE){
+    passModal.style.display = 'none';
+    // mark logged user admin for UI convenience? still navigate
+    navigateWithLoader('admin');
+  } else {
+    passHint.textContent = 'Wrong passcode';
+  }
+});
+window.addEventListener('click', e => { if(e.target === passModal) passModal.style.display = 'none'; });
+
+/* ---------- products rendering / upload / delete ---------- */
+const productGrid = $('productGrid');
+const adminProducts = $('adminProducts');
+function renderProducts(filter=''){
+  const prods = getProducts();
+  productGrid.innerHTML = '';
+  adminProducts.innerHTML = '';
+  const filtered = prods.filter(p => p.title.toLowerCase().includes(filter.toLowerCase()));
+  if(filtered.length === 0) productGrid.innerHTML = '<p style="color:#00477a">No products found.</p>';
+  filtered.forEach((p, i) => {
+    // public card
+    const c = document.createElement('div'); c.className='card';
+    c.innerHTML = `<img src="${p.image||''}" alt=""><div class="meta"><h4>${escapeHtml(p.title)}</h4>
+      <p class="desc">${escapeHtml(p.desc)}</p><p class="price">$${Number(p.price).toFixed(2)}</p></div>`;
+    productGrid.appendChild(c);
+  });
+  // admin side
+  prods.forEach((p,i)=>{
+    const c = document.createElement('div'); c.className='card';
+    c.innerHTML = `<img src="${p.image||''}" alt=""><div class="meta"><h4>${escapeHtml(p.title)}</h4>
+      <p class="price">$${Number(p.price).toFixed(2)}</p>
+      <button class="delete-btn" data-index="${i}">Delete</button></div>`;
+    adminProducts.appendChild(c);
+  });
+  // attach delete listeners
+  adminProducts.querySelectorAll('.delete-btn').forEach(btn=>{
+    btn.addEventListener('click', (e)=>{
+      const idx = Number(btn.getAttribute('data-index'));
+      if(confirm('Delete this product?')){
+        const arr = getProducts();
+        arr.splice(idx,1);
+        saveProducts(arr);
+        renderProducts();
+        alert('Product deleted');
+      }
+    });
+  });
+}
+
+/* upload */
+$('uploadForm').addEventListener('submit', e=>{
+  e.preventDefault();
+  const title = $('pTitle').value.trim();
+  const desc = $('pDesc').value.trim();
+  const price = parseFloat($('pPrice').value);
+  const file = $('pImage').files[0];
+  if(!title || isNaN(price)){ alert('Fill title and price'); return; }
+  if(file){
+    const reader = new FileReader();
+    reader.onload = ()=> {
+      const arr = getProducts();
+      arr.push({title,desc,price,image:reader.result});
+      saveProducts(arr);
+      renderProducts();
+      $('uploadForm').reset();
+      alert('Product uploaded');
+    };
+    reader.readAsDataURL(file);
+  } else {
+    const arr = getProducts();
+    arr.push({title,desc,price,image:''});
+    saveProducts(arr);
+    renderProducts();
+    $('uploadForm').reset();
+    alert('Product uploaded');
+  }
+});
+
+/* search */
+$('searchBtn').addEventListener('click', ()=> renderProducts($('searchInput').value || ''));
+
+/* utility escape */
+function escapeHtml(s){ if(!s) return ''; return String(s).replace(/[&<>"]/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c])); }
+
+/* ---------- messages (client -> admin) and replies ---------- */
+const notifyForm = $('notifyForm');
+const messageBox = $('messageBox');
+const productPriceInput = $('productPrice');
+const messageTable = $('messageTable');
+const clientRepliesContainer = $('clientRepliesContainer');
+
+notifyForm.addEventListener('submit', e=>{
+  e.preventDefault();
+  const msg = messageBox.value.trim();
+  const price = productPriceInput.value.trim();
+  const user = localStorage.getItem('loggedUser') || 'guest';
+  if(!msg){ alert('Enter a message'); return; }
+  const arr = getMessages();
+  arr.push({ user, message: msg, price: price || '', time: new Date().toLocaleString(), reply:'', replyTime:'' });
+  saveMessages(arr);
+  messageBox.value=''; productPriceInput.value='';
+  alert('Message sent to admin');
+  // refresh admin view if open
+  renderMessages();
+});
+
+/* admin: render messages with reply input */
+function renderMessages(){
+  const msgs = getMessages();
+  messageTable.innerHTML = '';
+  if(msgs.length === 0){
+    messageTable.innerHTML = '<p style="color:#ddd">No messages yet.</p>';
+    return;
+  }
+  // show newest first
+  const show = [...msgs].reverse();
+  show.forEach((m, idx)=>{
+    const div = document.createElement('div'); div.className='msg-card';
+    const originalIndex = msgs.length - 1 - idx; // map back to original index in stored array
+    div.innerHTML = `<b>${escapeHtml(m.user)}</b>: ${escapeHtml(m.message)} ${m.price?`<div style="margin-top:6px"><b>Price:</b> $${escapeHtml(m.price)}</div>`:''}
+      <div class="msg-meta">${escapeHtml(m.time)}</div>
+      ${m.reply?`<div style="margin-top:8px"><b>Reply:</b> ${escapeHtml(m.reply)}<div class="msg-meta">${escapeHtml(m.replyTime||'')}</div></div>`:''}
+      <div class="msg-reply">
+        <input id="replyInput_${originalIndex}" placeholder="Type reply to ${escapeHtml(m.user)}" />
+        <button data-idx="${originalIndex}" class="send-reply">Send</button>
+      </div>`;
+    messageTable.appendChild(div);
+  });
+  // hook send reply buttons
+  messageTable.querySelectorAll('.send-reply').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const idx = Number(btn.getAttribute('data-idx'));
+      const input = $(`replyInput_${idx}`);
+      const text = input.value.trim();
+      if(!text) return alert('Enter reply');
+      const arr = getMessages();
+      arr[idx].reply = text;
+      arr[idx].replyTime = new Date().toLocaleString();
+      saveMessages(arr);
+      renderMessages();
+      alert('Reply saved — client will see it in their panel');
+    });
+  });
+}
+
+/* client: render replies for logged in user */
+function renderClientReplies(){
+  clientRepliesContainer.innerHTML = '';
+  const user = localStorage.getItem('loggedUser');
+  if(!user) {
+    clientRepliesContainer.innerHTML = '<p style="color:#bfe8ff">Sign in to see replies from admin.</p>';
+    return;
+  }
+  const msgs = getMessages().filter(m => m.user === user && m.reply);
+  if(msgs.length === 0){
+    clientRepliesContainer.innerHTML = '<p style="color:#bfe8ff">No replies from admin yet.</p>';
+    return;
+  }
+  const frag = document.createDocumentFragment();
+  msgs.forEach(m=>{
+    const d = document.createElement('div'); d.className='msg-card';
+    d.innerHTML = `<b>You:</b> ${escapeHtml(m.message)} ${m.price?`<div><b>Price:</b> $${escapeHtml(m.price)}</div>`:''}
+      <div class="msg-meta">Sent: ${escapeHtml(m.time)}</div>
+      <div style="margin-top:6px;background:#f0f8ff;padding:8px;border-radius:6px"><b>Admin Reply:</b> ${escapeHtml(m.reply)}<div class="msg-meta">${escapeHtml(m.replyTime)}</div></div>`;
+    frag.appendChild(d);
+  });
+  clientRepliesContainer.appendChild(frag);
+}
+
+/* button to manually view */
+$('viewRepliesBtn').addEventListener('click', renderClientReplies);
+
+/* ---------- initialize UI states ---------- */
+$('welcomeUser').textContent = localStorage.getItem('loggedUser') ? 'Signed in as: ' + localStorage.getItem('loggedUser') : '';
+
+/* render initial */
+renderProducts();
+renderMessages();
+renderClientReplies();
+
+/* close modals on outside click handled earlier for pass/auth */
+document.addEventListener('click', (e)=>{
+  // clicking outside fabMenu should close it
+  if(!fab.contains(e.target) && !fabMenu.contains(e.target)){ fabMenu.style.display='none'; }
+});
+
+/* small helper: ensure fields cleared on open */
+function openAuthModalFor(mode){
+  openAuth(mode);
+  authModal.style.display = 'flex';
+}
+
+/* expose openAuth to global for menu use */
+window.openAuth = openAuth;
+
+/* make search trigger on Enter key */
+$('searchInput').addEventListener('keydown', e=> { if(e.key==='Enter') renderProducts($('searchInput').value) });
+
+/* hide loader on initial load (should be hidden) */
+loader.style.display = 'none';
+</script>
+</body>
+</html>
